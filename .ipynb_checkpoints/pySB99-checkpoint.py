@@ -19,7 +19,7 @@ import os
 st = time.time()
 
 '''SFR is no longer an input option and instead will be applied through a SFR light-ratio weighting method post-processing, which is still in progress'''
-M_total = 1.0e3
+M_total = 1.0e6
 
 IMF_exponents = [1.3, 2.3]
 IMF_mass_limits = 0.1, 0.5, 120.
@@ -28,15 +28,15 @@ IMF_mass_limits = 0.1, 0.5, 120.
 run_speed_mode = 'FAST' #should take ~60s. Options include 'FAST' (takes ~20s, only recommended for tests and models <10Myr) and 'HIGH_RES' (takes a while but all outputs are have high resolution interpolation in mass)
 
 Z = 'MW' #Z options are MWC, MW, LMC, SMC, IZw18 and Z0 (which correspond to Z=0.02, 0.014, 0.006, 0.002, 0.0004 and 0.0 respectively) although if the WMbasic OB models are used the spectra grid metallicities vary slightly)
-SPEC = 'FW' #options are FW and WM which refer to the Fastwind and WMbasic OB spectral libraries
+SPEC = 'WM' #options are FW and WM which refer to the Fastwind and WMbasic OB spectral libraries
 rot = False #options are True to use tracks with 0.4v_critical rotation or False for non-rotating tracks
 
-plot_ion_flux = False
-plot_wind = False
-plot_uv_slope = False
-plot_ew = False
+plot_ion_flux = True
+plot_wind = True
+plot_uv_slope = True
+plot_ew = True
 
-save_output = False
+save_output = True
 
 '''coming soon!'''
 plot_spec_with_time = False
@@ -48,7 +48,7 @@ plot_new_hires = False
 plot_colours = False
 
 if save_output == True:
-    SBmodel_name = 'pySB_test2' #set the output folder name here!
+    SBmodel_name = 'pySB_test' #set the output folder name here!
     os.mkdir(SBmodel_name)
 
 '''Load input files based on chosen metallicity and mass limits'''
@@ -256,7 +256,7 @@ if POWR == False:
     empty_hires_flux = np.full_like(hires_wave_grid, 0.0)
 
 times_spectra = np.arange(0.01e6, 50e6, 1e6)
-times_steps = np.arange(0.1e6,10e6, 0.1e6)
+times_steps = np.arange(0.00e6, 50e6, 0.1e6)
 times_steps_SB99 = np.arange(0.01e6, 50e6, 0.1e6)
 
 def calc_Nostars(IMF_masses, IMF_exponents, IMF_mass_limits):
@@ -1801,7 +1801,7 @@ for i in range(len(times_steps)):
 #    population_flux = specsyn(assigned_integrated_spectra, specsyn_bbfluxes, assigned_spectra, timestep_radii_final)
     population_flux, assigned_flux_scaled = specsyn(assigned_integrated_spectra, specsyn_bbfluxes, assigned_spectra, specsyn_radii, No_stars)
     timestep_vinfs, timestep_windpowers_calc, timestep_windpowers, timestep_windmoms_calc, timestep_windmoms, timestep_windmoms_vink, timestep_vinfs_vink, timestep_mdots_vink, timestep_vescs, timestep_windmoms_leuven, timestep_windmoms_xshootu, timestep_windpowers_xshootu = calc_wind(timestep_temps_final, timestep_lums_final, timestep_masses_final, timestep_mass_loss_rates_final, timestep_H_abundances_final, timestep_12C_abundances_final, timestep_14N_abundances_final, timestep_16O_abundances_final, initial_masses, No_stars, timestep_radii_final, timestep_cnr)
-    
+
     #spt_temp, spt_lum, spt, lc = spectype(timestep_temps_final, timestep_lums_final)
     population_flux_iterations.append(population_flux)
     population_flux_iterations_send.append(np.log10(population_flux)+20.)
@@ -1904,31 +1904,6 @@ for i in range(len(times_steps)):
     population_continuum_iterations.append(population_continuum)
 et = time.time()
 elapsed_time = et - st
-
-fp = open('spectrum1k_FWSpectral_Z014.spectrum1', 'w')
-fp.write('TIME[YR]\tWAVELENGTH[A]\tLOGSTELLA[ERG/SEC/A]')
-
-line = '{0:.5e}\t{1:.2f}\t{2:.5f}\n'
-
-for ii in range(0, len(times_steps)):
-    curTime = times_steps[ii]
-    curSpectrum = population_flux_iterations_send[ii]
-    
-    for jj in range(0, len(wave_grid)):
-        fp.write(line.format(curTime, wave_grid[jj], curSpectrum[jj]))
-
-fp.close()
-    
-    
-    
-
-print(len(population_flux_iterations))
-fig=plt.figure()
-plt.style.use('default')
-ax=fig.add_subplot(111)
-ax.plot(np.log10(wave_grid), np.log10(population_flux_iterations[0])+20 , label='pySB')
-plt.show()
-
 print('Execution time:', elapsed_time, 'seconds')
 
 if save_output == True:
