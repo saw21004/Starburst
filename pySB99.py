@@ -27,8 +27,8 @@ IMF_mass_limits = 0.1, 0.5, 120.
 #Variable interpolation resolution factor, lower for speed up or higher for higher resolution isochrone interpolation
 run_speed_mode = 'FAST' #should take ~60s. Options include 'FAST' (takes ~20s, only recommended for tests and models <10Myr) and 'HIGH_RES' (takes a while but all outputs are have high resolution interpolation in mass)
 
-Z = 'MW' #Z options are MWC, MW, LMC, SMC, IZw18 and Z0 (which correspond to Z=0.02, 0.014, 0.006, 0.002, 0.0004 and 0.0 respectively) although if the WMbasic OB models are used the spectra grid metallicities vary slightly)
-SPEC = 'FW' #options are FW and WM which refer to the Fastwind and WMbasic OB spectral libraries
+Z = 'LMC' #Z options are MWC, MW, LMC, SMC, IZw18 and Z0 (which correspond to Z=0.02, 0.014, 0.006, 0.002, 0.0004 and 0.0 respectively) although if the WMbasic OB models are used the spectra grid metallicities vary slightly)
+SPEC = 'WM' #options are FW and WM which refer to the Fastwind and WMbasic OB spectral libraries
 rot = False #options are True to use tracks with 0.4v_critical rotation or False for non-rotating tracks
 
 plot_ion_flux = False
@@ -131,7 +131,7 @@ if Z == 'LMC':
         evo_tracks = np.load(file_path + 'Z006v00_VMS_tracks.npy')
         minimum_wr_mass=25.
     if SPEC == 'WM':
-        spectra_grid_file = file_path + 'galaxy/lejeune/WMbasic_OB_Z008_tst.dat'
+        spectra_grid_file = file_path + 'WMbasic_OB_Z008.dat'
     if SPEC == 'FW':
         spectra_grid_file = file_path + 'FW_SB_grid_Z006.txt'
         if IMF_mass_limits[-1] > 120.0:
@@ -256,7 +256,7 @@ if POWR == False:
     empty_hires_flux = np.full_like(hires_wave_grid, 0.0)
 
 times_spectra = np.arange(0.01e6, 50e6, 1e6)
-times_steps = np.arange(0.1e6,10e6, 0.1e6)
+times_steps = np.arange(0.1e6,10.1e6, 0.1e6)
 times_steps_SB99 = np.arange(0.01e6, 50e6, 0.1e6)
 
 def calc_Nostars(IMF_masses, IMF_exponents, IMF_mass_limits):
@@ -1905,8 +1905,8 @@ for i in range(len(times_steps)):
 et = time.time()
 elapsed_time = et - st
 
-fp = open('spectrum1k_FWSpectral_Z014.spectrum1', 'w')
-fp.write('TIME[YR]\tWAVELENGTH[A]\tLOGSTELLA[ERG/SEC/A]')
+fp = open('spectrum1k_WMSpectral_Z006.spectrum1', 'w')
+fp.write('TIME[YR]\tWAVELENGTH[A]\tLOGSTELLAR[ERG/SEC/A]\n')
 
 line = '{0:.5e}\t{1:.2f}\t{2:.5f}\n'
 
@@ -1918,7 +1918,19 @@ for ii in range(0, len(times_steps)):
         fp.write(line.format(curTime, wave_grid[jj], curSpectrum[jj]))
 
 fp.close()
+
+fp = open('ewidth1k_WMSpectral_Z006.ewidth1', 'w')
+fp.write('TIME[YR]\tLUM(H_A)\n')
+
+line = '{0:.5e}\t{1:.3f}\n'
+
+for ii in range(0, len(times_steps)):
+    curTime = times_steps[ii]
+    curHa = np.log10(population_Ha_luminosity[ii])+30
     
+    fp.write(line.format(curTime, curHa))
+
+fp.close()
     
     
 
